@@ -1,0 +1,51 @@
+--------------------------------------------------------------------------------------
+   This document shows how to run MR code written in Python, using Hadoop Streaming
+--------------------------------------------------------------------------------------
+
+NOTE: This is not the only way to run Python code for MapReduce. Another approach
+      would require to convert the Python script to a jar file, using Jython..
+
+First test your scripts:
+
+echo "foo foo quux labs foo bar quux" | ./mapper.py
+
+echo "foo foo quux labs foo bar quux" | ./mapper.py | sort -k1,1 | ./reducer.py
+
+Example of command to run MR script:
+
+hadoop jar /usr/local/hadoop-3.3.1/share/hadoop/tools/lib/hadoop-streaming-3.3.1.jar -mapper "mapper.py" -file ./mapper.py -reducer "reducer.py" -file ./reducer.py -input "/user/fdmuser/demo/MR_input" -output "/user/fdmuser/demo/MR_output/"
+
+NOTE: While the '-file' options seem redundant and the manual says they aren't required, 
+      I couldn't make it run without them...
+
+To check the output:
+
+hdfs dfs -ls demo/MR_output
+hdfs dfs -cat demo/MR_output/part-00000
+
+
+Same example, but using combiner:
+
+hadoop jar /usr/local/hadoop-3.3.1/share/hadoop/tools/lib/hadoop-streaming-3.3.1.jar -mapper "mapper.py" -file ./mapper.py -reducer "reducer.py" -file ./reducer.py -combiner "reducer.py" -file ./reducer.py -input "/user/fdmuser/demo/MR_input" -output "/user/fdmuser/demo/MR_output/"
+
+
+NOTE: MapReduce assumes the output does not exist and tries to create it every time it runs.
+      If the folder already exists, an error is displayed.
+      ===> Remember to delete output folder before running the next job:
+
+      hdfs dfs -rm -r demo/MR_output
+
+
+
+----------------------------------------------------------------------------------------------
+
+
+
+Source for getting the code to work (some small changes may be required to adapt code from python to python3):
+
+https://xgwang0.github.io/2018/08/30/hadoop-mapreduce-in-python/
+
+Manual page for Hadoop Streaming:
+
+https://hadoop.apache.org/docs/r1.0.4/streaming.html#More+usage+examples
+
